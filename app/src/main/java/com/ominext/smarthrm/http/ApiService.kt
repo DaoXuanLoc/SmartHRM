@@ -7,8 +7,9 @@ import retrofit2.http.Path
 
 interface ApiService {
 
-    @POST("api/login/{email}")
-    fun login(@Path("email") email: String): Observable<Response<Void>>
+    @POST("/api/auth/token")
+    fun login(@Path("loginId") email: String,
+              @Path("password") password: String): Observable<Response<Void>>
 
     @POST("api/login/{email}")
     fun pushinfo(@Path("email") email: String): Observable<Response<Void>>

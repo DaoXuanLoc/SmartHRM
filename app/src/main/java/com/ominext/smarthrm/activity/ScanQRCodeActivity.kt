@@ -34,14 +34,13 @@ class ScanQRCodeActivity : AppCompatActivity(), ZXingScannerView.ResultHandler, 
 
     private fun handleClick() {
         img_toggle_flash.setOnClickListener {
-            println("ScanQRCodeActivity .handleClick = " + scannerView.flash)
             scannerView.toggleFlash()
         }
         turn_in.setOnClickListener {
         }
 
         img_Back.setOnClickListener {
-
+            finish()
         }
 
         img_history.setOnClickListener {
@@ -119,6 +118,7 @@ class ScanQRCodeActivity : AppCompatActivity(), ZXingScannerView.ResultHandler, 
 
 
     override fun onResume() {
+        scannerView.startCamera()
         super.onResume()
     }
 
@@ -128,11 +128,12 @@ class ScanQRCodeActivity : AppCompatActivity(), ZXingScannerView.ResultHandler, 
     }
 
     override fun handleResult(rawResult: Result?) {
-        val d = Date(rawResult?.timestamp ?: 100 * 1000);
-        println("ScanQRCodeActivity .handleResult timestamp" + d)
+        val d = Date(rawResult?.timestamp ?: 100 * 1000)
+        println("ScanQRCodeActivity .handleResult timestamp$d")
         println("ScanQRCodeActivity .handleResult resultPoints" + rawResult?.resultPoints)
         println("ScanQRCodeActivity .handleResult result" + rawResult?.text)
         println("ScanQRCodeActivity .handleResult resultresult" + rawResult?.barcodeFormat.toString())
+        scannerView.resumeCameraPreview { this }
 
     }
 

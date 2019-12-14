@@ -1,7 +1,6 @@
 package com.ominext.smarthrm.presenter
 
 import android.util.Log
-import com.ominext.smarthrm.activity.MainActivity
 import com.ominext.smarthrm.http.ApiClient
 import com.ominext.smarthrm.http.ApiService
 import com.ominext.smarthrm.view.ILogin
@@ -15,7 +14,7 @@ class LoginPresenter (private var iLogin: ILogin) {
     fun login() {
         val apiClient = ApiClient().getClient().create(ApiService::class.java)
         var disposable: Disposable? = null
-        disposable = apiClient.login("1234")
+        disposable = apiClient.login("quangnv@ominext.com","123456")
             .doOnSubscribe {
                 // show progess
                 iLogin.onLoading()
@@ -29,8 +28,8 @@ class LoginPresenter (private var iLogin: ILogin) {
                     disposables.remove(it)
                 }
             }, {
-                iLogin.onLoginFail()
-                Log.e(MainActivity.TAG, Throwable().toString())
+                iLogin.onLoginFail(it)
+//                Log.e(MainActivity.TAG, Throwable().toString())
                 disposable?.let {
                     disposables.remove(it)
                 }

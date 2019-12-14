@@ -1,10 +1,7 @@
 package com.ominext.smarthrm.presenter
 
-import android.util.Log
-import com.ominext.smarthrm.activity.MainActivity
 import com.ominext.smarthrm.http.ApiClient
 import com.ominext.smarthrm.http.ApiService
-import com.ominext.smarthrm.view.ILogin
 import com.ominext.smarthrm.view.IScanQRCode
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable

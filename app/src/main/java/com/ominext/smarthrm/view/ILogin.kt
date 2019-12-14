@@ -8,5 +8,5 @@ interface ILogin {
 
     fun onLoginSuccess()
 
-    fun onLoginFail()
+    fun onLoginFail(err: Throwable)
 }

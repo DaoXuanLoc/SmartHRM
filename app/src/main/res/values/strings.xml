@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SmartHRM</string>
+    <string name="Ominext">Ominext Group</string>
+    <string name="permissions_not_granted_read_phone_state">Permissions not granted read phone state</string>
 </resources>

@@ -15,7 +15,7 @@ class ApiClient {
     companion object {
         const val REQUEST_TIMEOUT = 60L
         const val ISO_8601_DATE_TIME_FORMAT_RECEIVE = "yyyy-MM-dd'T'HH:mm:ssZZ"
-        const val BASE_URL = "HTTP"
+        const val BASE_URL = "192.168.100.197:8082"
     }
 
     lateinit var mRetrofit: Retrofit
