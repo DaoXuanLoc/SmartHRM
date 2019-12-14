@@ -6,7 +6,7 @@ interface ILogin {
 
     fun onHideLoading()
 
-    fun onLoginSuccess()
+    fun onLoginSuccess(token: String?)
 
-    fun onLoginFail(err: Throwable)
+    fun onLoginFail()
 }

@@ -1,48 +1,52 @@
 package com.ominext.smarthrm.activity
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.telephony.TelephonyManager
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import com.ominext.smarthrm.R
 import com.ominext.smarthrm.presenter.LoginPresenter
 import com.ominext.smarthrm.view.ILogin
-import android.util.Log
-import androidx.core.app.ActivityCompat
 
 class MainActvity : AppCompatActivity(), ILogin {
 
     lateinit var edtEmail: EditText
     lateinit var btLogin: Button
 
-    private var prisenter: LoginPresenter? = null
+    private var presenter: LoginPresenter? = null
     var imei: String = ""
 
     companion object {
         private const val MY_PERMISSIONS_REQUEST_READ_PHONE_STATE = 0
+        private const val KEY_IMEI = "KEY_IMEI"
+        private const val KEY_TOKEN = "KEY_TOKEN"
+        private const val KEY_EMAIL = "KEY_EMAIL"
+
         const val TAG = "TAG"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        prisenter = LoginPresenter(this)
-        prisenter!!.login()
+        presenter = LoginPresenter(this)
         initView()
     }
 
     private fun initView() {
         getUniqueIMEIId(this)
         edtEmail = findViewById(R.id.edt_email)
-
         btLogin = findViewById(R.id.btn_login)
 
         onclickLogin()
@@ -50,13 +54,16 @@ class MainActvity : AppCompatActivity(), ILogin {
 
     private fun onclickLogin() {
         btLogin.setOnClickListener {
-            val intent = Intent()
-            intent.setClass(this, ScanQRCodeActivity::class.java)
-            startActivity(intent)
+            val email = edtEmail.text
+            if (email.isNotEmpty()) {
+                presenter?.login(email.toString(), "123456")
+            } else {
+                Toast.makeText(this, "Ban can nhap Email", Toast.LENGTH_SHORT).show()
+            }
         }
-//        prisenter?.login(edtEmail.text.toString())
     }
 
+    @SuppressLint("HardwareIds")
     private fun getUniqueIMEIId(context: Context): String? {
         try {
             val telephonyManager =
@@ -70,7 +77,7 @@ class MainActvity : AppCompatActivity(), ILogin {
             }
             imei = telephonyManager.deviceId
             Log.e("imei", "=$imei")
-            return if (imei != null && !imei.isEmpty()) {
+            return if (imei.isNotEmpty()) {
                 imei
             } else {
                 Build.SERIAL
@@ -144,18 +151,28 @@ class MainActvity : AppCompatActivity(), ILogin {
     override fun onHideLoading() {
     }
 
-    override fun onLoginSuccess() {
+    override fun onLoginSuccess(token: String?) {
+        saveData(token)
         val intent = Intent()
         intent.setClass(this, ScanQRCodeActivity::class.java)
+        startActivity(intent)
     }
 
-    override fun onLoginFail(err: Throwable) {
-        println(err)
-        Toast.makeText(this, "$err", Toast.LENGTH_SHORT).show()
+    private fun saveData(token: String?) {
+        val sharedPref: SharedPreferences = getPreferences(Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.putString(KEY_IMEI, imei)
+        editor.putString(KEY_TOKEN, token)
+        editor.putString(KEY_EMAIL, edtEmail.text.toString())
+        editor.apply()
+    }
+
+    override fun onLoginFail() {
+        Toast.makeText(this, "Tai khoan chua duoc dang ky", Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        prisenter?.onDetach()
+        presenter?.onDetach()
     }
 }

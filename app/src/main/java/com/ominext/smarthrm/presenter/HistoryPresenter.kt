@@ -2,49 +2,42 @@ package com.ominext.smarthrm.presenter
 
 import com.ominext.smarthrm.http.ApiClient
 import com.ominext.smarthrm.http.ApiService
-import com.ominext.smarthrm.model.User
-import com.ominext.smarthrm.view.ILogin
-import io.reactivex.android.schedulers.AndroidSchedulers
+import com.ominext.smarthrm.view.IHistory
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 
-
-class LoginPresenter(private var iLogin: ILogin) {
+class HistoryPresenter (private val iHistory: IHistory) {
 
     private val disposables = CompositeDisposable()
 
-    fun login(username: String?, imei: String) {
+    fun getHistoryData() {
         val apiClient = ApiClient().getClient().create(ApiService::class.java)
         var disposable: Disposable? = null
-        disposable = apiClient
-            .login(User(username, imei))
-            .map { res ->
-                return@map res.body()
-            }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+        disposable = apiClient.getHistory()
             .doOnSubscribe {
                 // show progess
-                iLogin.onLoading()
+                iHistory.onLoading()
             }.doFinally {
                 //hide progess
-                iLogin.onHideLoading()
-            }.subscribe({ data ->
+                iHistory.onHideLoading()
+            }.subscribe({
                 //check api
-                iLogin.onLoginSuccess(data?.token)
+                val datas = it.body()
+                datas?.let {
+                    iHistory.onSuccess(data = it)
+                }
                 disposable?.let {
                     disposables.remove(it)
                 }
             }, {
-                iLogin.onLoginFail()
+                iHistory.onFail(it)
+//                Log.e(MainActivity.TAG, Throwable().toString())
                 disposable?.let {
                     disposables.remove(it)
                 }
             })
         disposables.add(disposable)
     }
-
 
     fun onDetach() {
         disposables.clear()

@@ -1,13 +1,20 @@
 package com.ominext.smarthrm.activity
 
 import android.Manifest
+import android.app.AlertDialog
+import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.zxing.Result
 import com.ominext.smarthrm.R
+import com.ominext.smarthrm.model.ScanQR
+import com.ominext.smarthrm.presenter.ScanQRCodePresenter
 import com.ominext.smarthrm.view.IScanQRCode
 import kotlinx.android.synthetic.main.activity_scan_qrcode.*
 import me.dm7.barcodescanner.zxing.ZXingScannerView
@@ -20,6 +27,8 @@ class ScanQRCodeActivity : AppCompatActivity(), ZXingScannerView.ResultHandler, 
     }
 
     lateinit var scannerView: ZXingScannerView
+
+    private var presenter: ScanQRCodePresenter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -128,13 +137,17 @@ class ScanQRCodeActivity : AppCompatActivity(), ZXingScannerView.ResultHandler, 
     }
 
     override fun handleResult(rawResult: Result?) {
-        val d = Date(rawResult?.timestamp ?: 100 * 1000)
-        println("ScanQRCodeActivity .handleResult timestamp$d")
-        println("ScanQRCodeActivity .handleResult resultPoints" + rawResult?.resultPoints)
-        println("ScanQRCodeActivity .handleResult result" + rawResult?.text)
-        println("ScanQRCodeActivity .handleResult resultresult" + rawResult?.barcodeFormat.toString())
-        scannerView.resumeCameraPreview { this }
+        val sharedPref = getPreferences(Context.MODE_PRIVATE) ?: return
+        val imei = sharedPref.getString("KEY_IMEI", "")
+        val token = sharedPref.getString("KEY_TOKEN", "")
+        val email = sharedPref.getString("KEY_EMAIL", "")
 
+        presenter?.pushInfo(ScanQR(email, token, imei, rawResult?.text))
+
+        val d = Date(rawResult?.timestamp ?: 100 * 1000)
+        Handler().postDelayed({
+            scannerView.startCamera()
+        }, 200)
     }
 
     override fun pushInfoSusscess() {
@@ -142,7 +155,28 @@ class ScanQRCodeActivity : AppCompatActivity(), ZXingScannerView.ResultHandler, 
     }
 
     private fun showDiaLogSusscess() {
+        AlertDialog.Builder(this)
+            .setTitle("Success")
+            .setMessage("Check in success ")
+            .setCancelable(false)
+            .setPositiveButton(
+                android.R.string.yes,
+                DialogInterface.OnClickListener { dialog, _ ->
+                    goToHistory()
+                })
+            .setPositiveButton(
+                android.R.string.no,
+                DialogInterface.OnClickListener { dialog, _ ->
+                    dialog.dismiss()
+                })
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .show()
+    }
 
+    private fun goToHistory() {
+        val intent = Intent()
+        intent.setClass(this, HistoryActivity::class.java)
+        startActivity(intent)
     }
 
     override fun pushInfoFail() {
@@ -150,6 +184,16 @@ class ScanQRCodeActivity : AppCompatActivity(), ZXingScannerView.ResultHandler, 
     }
 
     private fun showDiaLogFail() {
-        
+        AlertDialog.Builder(this)
+            .setTitle("Fail Scan QR")
+            .setMessage("Vui lòng thử lại")
+            .setCancelable(false)
+            .setPositiveButton(
+                android.R.string.yes,
+                DialogInterface.OnClickListener { dialog, _ ->
+                    dialog.dismiss()
+                })
+            .setIcon(android.R.drawable.ic_dialog_alert)
+            .show()
     }
 }
